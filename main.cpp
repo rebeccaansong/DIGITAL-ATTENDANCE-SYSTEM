@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdio>   // for remove and rename
 
 using namespace std;
 
@@ -105,7 +106,7 @@ void createSession() {
 }
 
 /* ============================
-   WEEK 3 - ATTENDANCE
+   ATTENDANCE MANAGEMENT
    ============================ */
 
 void markAttendance() {
@@ -153,6 +154,81 @@ void markAttendance() {
 
     cout << "Attendance recorded successfully." << endl;
 }
+
+/* ============================
+   UPDATE ATTENDANCE (WEEK 4)
+   ============================ */
+
+void updateAttendance() {
+    string courseCode;
+    string date;
+    string searchIndex;
+
+    cout << "Enter course code: ";
+    cin >> courseCode;
+
+    cout << "Enter date (YYYY_MM_DD): ";
+    cin >> date;
+
+    string filename = "session_" + courseCode + "_" + date + ".txt";
+
+    ifstream file(filename.c_str());
+    ofstream temp("temp.txt");
+
+    if (!file) {
+        cout << "Session file not found." << endl;
+        return;
+    }
+
+    cout << "Enter index number to update: ";
+    cin >> searchIndex;
+
+    string line;
+    bool updated = false;
+
+    while (getline(file, line)) {
+
+        if (line.find(searchIndex) != string::npos &&
+            line.find(",") != string::npos) {
+
+            string name;
+            string index;
+            string status;
+
+            int firstComma = line.find(",");
+            int secondComma = line.find(",", firstComma + 1);
+
+            name = line.substr(0, firstComma);
+            index = line.substr(firstComma + 1,
+                    secondComma - firstComma - 1);
+
+            string newStatus;
+            cout << "Enter new status (Present/Absent/Late): ";
+            cin >> newStatus;
+
+            temp << name << "," << index << "," << newStatus << endl;
+            updated = true;
+        }
+        else {
+            temp << line << endl;
+        }
+    }
+
+    file.close();
+    temp.close();
+
+    remove(filename.c_str());
+    rename("temp.txt", filename.c_str());
+
+    if (updated)
+        cout << "Attendance updated successfully." << endl;
+    else
+        cout << "Student not found in session." << endl;
+}
+
+/* ============================
+   REPORTS
+   ============================ */
 
 void displayAttendance() {
     string courseCode;
@@ -240,9 +316,10 @@ int main() {
         cout << "3. Search Student" << endl;
         cout << "4. Create Lecture Session" << endl;
         cout << "5. Mark Attendance" << endl;
-        cout << "6. Display Attendance" << endl;
-        cout << "7. Attendance Summary" << endl;
-        cout << "8. Exit" << endl;
+        cout << "6. Update Attendance" << endl;
+        cout << "7. Display Attendance" << endl;
+        cout << "8. Attendance Summary" << endl;
+        cout << "9. Exit" << endl;
         cout << "Enter choice: ";
         cin >> choice;
 
@@ -252,13 +329,14 @@ int main() {
             case 3: searchStudent(); break;
             case 4: createSession(); break;
             case 5: markAttendance(); break;
-            case 6: displayAttendance(); break;
-            case 7: attendanceSummary(); break;
-            case 8: cout << "Exiting program..." << endl; break;
+            case 6: updateAttendance(); break;
+            case 7: displayAttendance(); break;
+            case 8: attendanceSummary(); break;
+            case 9: cout << "Exiting program..." << endl; break;
             default: cout << "Invalid choice." << endl;
         }
 
-    } while(choice != 8);
+    } while(choice != 9);
 
     return 0;
 }
